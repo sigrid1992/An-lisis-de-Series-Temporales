@@ -1,0 +1,49 @@
+import numpy as np
+from tensorflow import keras
+from tensorflow.keras import layers
+
+(x_train, y_train), (x_val, y_val) = keras.datasets.mnist.load_data()
+
+print(x_train.shape)
+
+n_digits = 4
+
+# Training data.
+X_trsum = x_train.reshape(-1, n_digits, 28, 28, 1) / 255.
+Y_trsum = tensorflow.keras.utils.to_categorical(np.sum(y_train.reshape(-1, n_digits), axis=1), num_classes=37)
+
+# Validation data.
+X_vlsum = x_val.reshape(-1, n_digits, 28, 28, 1) / 255.
+Y_vlsum = tensorflow.keras.utils.to_categorical(np.sum(y_val.reshape(-1, n_digits), axis=1), num_classes=37)
+
+model.add(Input((n_digits, 28, 28, 1)))
+
+model.add(TimeDistributed(Conv2D(8,  3, strides=2, padding='same', activation='relu'))) # Capa convolucional.
+model.add(TimeDistributed(Conv2D(16, 3, strides=2, padding='same', activation='relu'))) # Capa convolucional.
+model.add(TimeDistributed(Conv2D(32, 3, strides=2, padding='same', activation='relu'))) # Capa convolucional.
+
+model.add(TimeDistributed(Flatten())) # Aplanamos los outputs de cada capa convolucional a vectores 1-dimensionales.
+
+
+model.add(LSTM(32, return_sequences=False)) # [32]
+model.add(Dense(37, activation="softmax"))
+
+model.summary()
+model.compile(optimizer=Adam(lr=0.0005), loss='categorical_crossentropy', metrics=['acc'])
+model.fit(X_trsum, Y_trsum, validation_data=(X_vlsum, Y_vlsum), epochs=30)
+
+# Visualizamos 10 ejemplos de sumas.
+for i in range(10):
+  # Sacamos un set de imágenes aleatorio.
+  idx = np.random.randint(len(X_vlsum))
+
+  # Lo visualizamos...
+  fig, axs = plt.subplots(1, 4, figsize=(10, 10))
+  for d in range(n_digits):
+    fig.axes[d].matshow(X_vlsum[idx, d, ..., 0])
+    fig.axes[d].axis('off')
+  plt.show()
+  
+  # Y comprobamos su resultado.
+  print('Valor Pred: ', np.argmax(model.predict(X_vlsum[idx:idx+1, ...])[0]))
+  print('Valor Real: ', np.argmax(Y_vlsum[idx:idx+1, ...]))
